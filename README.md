@@ -1,2 +1,2 @@
 # Sistem
-Online psychological assessment platform for traders
+Online psychological assessment platform for stock traders 
