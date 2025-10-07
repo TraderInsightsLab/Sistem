@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Reports bucket - only authenticated users can read their own reports
+    match /reports/{userId}/{reportId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth.token.firebase.sign_in_provider == 'custom';
+    }
+    
+    // Temporary files for processing
+    match /temp/{allPaths=**} {
+      allow read, write: if request.auth.token.firebase.sign_in_provider == 'custom';
+    }
+    
+    // Public assets
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth.token.firebase.sign_in_provider == 'custom';
+    }
+    
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
