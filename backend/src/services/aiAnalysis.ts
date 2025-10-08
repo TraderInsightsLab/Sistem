@@ -1,5 +1,5 @@
 import { VertexAI } from '@google-cloud/vertexai';
-import { AIAnalysisInput, AIAnalysisResult } from '../../../shared/types';
+import { AIAnalysisInput, AIAnalysisResult, AnalysisResult } from '../types';
 
 // Initialize Vertex AI
 const vertexAI = new VertexAI({
@@ -9,10 +9,10 @@ const vertexAI = new VertexAI({
 
 const model = vertexAI.preview.getGenerativeModel({
   model: process.env.VERTEX_AI_MODEL_ID || 'gemini-pro',
-  generation_config: {
-    max_output_tokens: 8192,
+  generationConfig: {
+    maxOutputTokens: 8192,
     temperature: 0.3,
-    top_p: 0.8,
+    topP: 0.8,
   },
 });
 
@@ -25,8 +25,8 @@ export class AIAnalysisService {
       
       // Call Vertex AI
       const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const response = result.response;
+      const text = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
       // Parse the JSON response
       const analysis = JSON.parse(text);

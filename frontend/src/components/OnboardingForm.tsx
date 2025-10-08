@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserContext } from '../../shared/types';
+import { UserContext } from '../types';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface OnboardingFormProps {
@@ -14,9 +14,9 @@ export function OnboardingForm({ onComplete }: OnboardingFormProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<UserContext>>({
     experienceLevel: 'beginner',
-    riskTolerance: 'medium',
     tradingGoals: [],
-    preferredMarkets: []
+    preferredMarkets: [],
+    riskTolerance: 'medium'
   });
 
   const totalSteps = 5;

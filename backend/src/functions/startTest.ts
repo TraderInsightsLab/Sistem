@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
 import { databaseService } from '../services/database';
-import { allQuestions } from '../../../shared/questions';
-import { UserContext } from '../../../shared/types';
-import * as Joi from 'joi';
+import { UserContext } from '../types';
 
 // Validation schema for user context
 const userContextSchema = Joi.object({
@@ -14,14 +12,14 @@ const userContextSchema = Joi.object({
   preferredMarkets: Joi.array().items(Joi.string()).required()
 });
 
-export const startTestHandler = async (req: Request, res: Response) => {
+export const startTestHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Starting new test session');
     
     // Validate request body
     const { error, value } = userContextSchema.validate(req.body.userContext);
     if (error) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: {
           message: 'Invalid user context data',
@@ -29,6 +27,7 @@ export const startTestHandler = async (req: Request, res: Response) => {
           details: error.details
         }
       });
+      return;
     }
 
     const userContext: UserContext = value;

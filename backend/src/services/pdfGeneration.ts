@@ -70,11 +70,12 @@ export class PDFGenerationService {
       });
       
       console.log('PDF generated successfully');
-      return pdfBuffer;
+      return Buffer.from(pdfBuffer);
 
     } catch (error) {
       console.error('Error generating PDF:', error);
-      throw new Error(`PDF generation failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`PDF generation failed: ${errorMessage}`);
     } finally {
       if (browser) {
         await browser.close();

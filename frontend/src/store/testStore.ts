@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { UserContext, TestAnswer, TestSession, TestQuestion } from '../../shared/types';
-import { allQuestions } from '../../shared/questions';
+import { UserContext, TestAnswer, TestSession, TestQuestion } from '../types';
+import { allQuestions } from '../data/questions';
 
 interface TestState {
   // Current test session

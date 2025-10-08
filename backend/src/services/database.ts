@@ -1,7 +1,7 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { TestSession, PaymentSession } from '../../shared/types';
+import { TestSession, PaymentSession } from '../types';
 
 // Initialize Firebase Admin
 if (!getApps().length) {
@@ -65,17 +65,14 @@ export class DatabaseService {
   async completeTestSession(sessionId: string, analysisResult: any): Promise<void> {
     await this.updateTestSession(sessionId, {
       completedAt: Date.now(),
-      fullReportData: analysisResult,
-      teaserData: {
-        archetype: analysisResult.archetype.name,
-        mainStrength: analysisResult.strengths[0]?.category || 'Analiză detaliată'
-      }
+      analysisResults: analysisResult,
+      status: 'completed'
     });
   }
 
   // Payment Session operations
   async createPaymentSession(payment: Omit<PaymentSession, 'createdAt'>): Promise<void> {
-    await db.collection('paymentSessions').doc(payment.sessionId).set({
+    await db.collection('paymentSessions').doc(payment.id).set({
       ...payment,
       createdAt: Date.now()
     });
@@ -86,7 +83,7 @@ export class DatabaseService {
     
     // Also update the test session payment status
     await this.updateTestSession(sessionId, { 
-      paymentStatus: status === 'completed' ? 'paid' : status === 'failed' ? 'failed' : 'pending'
+      paymentStatus: status === 'completed' ? 'completed' : status === 'failed' ? 'failed' : 'pending'
     });
   }
 
@@ -132,10 +129,6 @@ export class DatabaseService {
       id: doc.id,
       ...doc.data()
     })) as TestSession[];
-  }
-
-  async updateReportStatus(sessionId: string, status: TestSession['reportStatus']): Promise<void> {
-    await this.updateTestSession(sessionId, { reportStatus: status });
   }
 }
 

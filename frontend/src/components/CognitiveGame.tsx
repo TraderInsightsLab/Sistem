@@ -49,7 +49,7 @@ export function CognitiveGame({ gameConfig, onComplete }: CognitiveGameProps) {
       const outcome = Math.random() > 0.5 ? 'win' : 'lose';
       const change = outcome === 'win' ? option.potential : -option.loss;
       
-      setCurrentAmount(prev => Math.max(0, prev + change));
+      setCurrentAmount((prev: number) => Math.max(0, prev + change));
       setScore(prev => prev + (outcome === 'win' ? option.potential : 0));
       setMetrics(prev => ({
         ...prev,

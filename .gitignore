@@ -135,3 +135,9 @@ tmp/
 
 # Test coverage
 coverage/
+
+# Secrets
+.env
+**/.env
+**/service-account-key*.json
+firebase-debug.log

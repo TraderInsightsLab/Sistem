@@ -1,67 +1,48 @@
 import { Request, Response } from 'express';
 import { databaseService } from '../services/database';
-import { TestAnswer } from '../../../shared/types';
-import * as Joi from 'joi';
 
 // Validation schema for save answer request
-const saveAnswerSchema = Joi.object({
-  sessionId: Joi.string().required(),
-  answer: Joi.object({
-    questionId: Joi.string().required(),
-    answer: Joi.alternatives().try(
-      Joi.string(),
-      Joi.number(),
-      Joi.array().items(Joi.string())
-    ).required(),
-    timestamp: Joi.number().required(),
-    responseTime: Joi.number().required(),
-    gameResults: Joi.object({
-      score: Joi.number(),
-      metrics: Joi.object()
-    }).optional()
-  }).required()
-});
+const validateSaveAnswer = (data: any) => {
+  if (!data.sessionId || typeof data.sessionId !== 'string') {
+    throw new Error('Session ID is required');
+  }
+  if (!data.answer || !data.answer.questionId || !data.answer.answer || !data.answer.timestamp) {
+    throw new Error('Answer data is incomplete');
+  }
+  return data;
+};
 
-export const saveAnswerHandler = async (req: Request, res: Response) => {
+export const saveAnswerHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Saving answer for session');
     
     // Validate request body
-    const { error, value } = saveAnswerSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: 'Invalid answer data',
-          code: 'VALIDATION_ERROR',
-          details: error.details
-        }
-      });
-    }
-
-    const { sessionId, answer } = value;
+    const data = validateSaveAnswer(req.body);
+    const { sessionId, answer } = data;
 
     // Verify session exists
     const session = await databaseService.getTestSession(sessionId);
     if (!session) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: {
           message: 'Test session not found',
           code: 'SESSION_NOT_FOUND'
         }
       });
+      return;
     }
 
     // Check if session is still active (not completed and not paid)
     if (session.completedAt) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: {
           message: 'Test session is already completed',
           code: 'SESSION_COMPLETED'
         }
       });
+      return;
     }
 
     // Save the answer
@@ -71,8 +52,6 @@ export const saveAnswerHandler = async (req: Request, res: Response) => {
     await databaseService.logAnalytics('answer_saved', {
       sessionId,
       questionId: answer.questionId,
-      responseTime: answer.responseTime,
-      hasGameResults: !!answer.gameResults,
       timestamp: Date.now()
     });
 
