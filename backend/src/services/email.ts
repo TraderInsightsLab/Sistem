@@ -1,7 +1,7 @@
-import * as sgMail from '@sendgrid/mail';
+// import * as sgMail from '@sendgrid/mail';
 
 // Initialize SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
 interface SendReportParams {
   to: string;
@@ -37,8 +37,8 @@ export class EmailService {
         ]
       };
 
-      await sgMail.send(msg);
-      console.log(`Report email sent successfully to: ${to}`);
+      // await sgMail.send(msg);
+      console.log(`[MOCK] Report email would be sent to: ${to}`);
 
     } catch (error) {
       console.error('Error sending email:', error);
@@ -59,8 +59,8 @@ export class EmailService {
         text: this.generateWelcomeText(sessionId)
       };
 
-      await sgMail.send(msg);
-      console.log(`Welcome email sent to: ${email}`);
+      // await sgMail.send(msg);
+      console.log(`[MOCK] Welcome email would be sent to: ${email}`);
 
     } catch (error) {
       console.error('Error sending welcome email:', error);

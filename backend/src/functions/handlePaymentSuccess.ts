@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { stripeService } from '../services/stripe';
 import { databaseService } from '../services/database';
 
-export const handlePaymentSuccessHandler = async (req: Request, res: Response) => {
+export const handlePaymentSuccessHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Received Stripe webhook');
     
@@ -10,26 +10,28 @@ export const handlePaymentSuccessHandler = async (req: Request, res: Response) =
     
     if (!signature) {
       console.error('No Stripe signature found');
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: {
           message: 'No signature provided',
           code: 'MISSING_SIGNATURE'
         }
       });
+      return;
     }
 
     // Verify webhook signature
     const isValid = await stripeService.verifyWebhookSignature(req.body, signature);
     if (!isValid) {
       console.error('Invalid webhook signature');
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: {
           message: 'Invalid signature',
           code: 'INVALID_SIGNATURE'
         }
       });
+      return;
     }
 
     // Process webhook event
@@ -39,15 +41,15 @@ export const handlePaymentSuccessHandler = async (req: Request, res: Response) =
 
     switch (event.type) {
       case 'checkout.session.completed':
-        await this.handleCheckoutCompleted(event.data.object);
+        await handleCheckoutCompleted(event.data.object!);
         break;
         
       case 'payment_intent.succeeded':
-        await this.handlePaymentSucceeded(event.data.object);
+        await handlePaymentSucceeded(event.data.object!);
         break;
         
       case 'payment_intent.payment_failed':
-        await this.handlePaymentFailed(event.data.object);
+        await handlePaymentFailed(event.data.object!);
         break;
         
       default:

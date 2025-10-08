@@ -1,5 +1,5 @@
 import * as puppeteer from 'puppeteer';
-import { UserContext, AIAnalysisResult } from '../../../shared/types';
+import { UserContext, AIAnalysisResult } from '../shared/types';
 
 interface ReportData {
   sessionId: string;

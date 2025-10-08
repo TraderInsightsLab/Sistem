@@ -2,9 +2,10 @@ import { VertexAI } from '@google-cloud/vertexai';
 import { AIAnalysisInput, AIAnalysisResult, AnalysisResult } from '../types';
 
 // Initialize Vertex AI
+const serviceAccount = require('../service-account-key.json');
 const vertexAI = new VertexAI({
-  project: process.env.VERTEX_AI_PROJECT_ID!,
-  location: process.env.VERTEX_AI_LOCATION!
+  project: serviceAccount.project_id,
+  location: 'us-central1'
 });
 
 const model = vertexAI.preview.getGenerativeModel({

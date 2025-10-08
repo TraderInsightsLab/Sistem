@@ -22,7 +22,9 @@ export const startTestHandler = async (req: Request, res: Response): Promise<voi
       startedAt: Date.now(),
       currentSection: 'autoportret',
       currentQuestionIndex: 0,
-      status: 'in-progress'
+      status: 'in-progress',
+      paymentStatus: 'pending',
+      reportStatus: 'pending'
     });
 
     console.log(`New test session created with ID: ${sessionId}`);

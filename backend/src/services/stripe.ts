@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 
 // Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe('sk_test_51R1or5GVlY8clYXhsG5QFx1vi4pMgptuwtqasyCCc4YINzeDZh7rqXf8vc0N0EuTY18WbAMgWVrFmMXkqgGRZA3d00XVWFHzHf', {
   apiVersion: '2025-02-24.acacia',
 });
 

@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
+import * as Joi from 'joi';
 import { databaseService } from '../services/database';
 import { UserContext } from '../types';
+import { allQuestions } from '../shared/questions';
 
-// Validation schema for user context
 const userContextSchema = Joi.object({
   email: Joi.string().email().required(),
   experienceLevel: Joi.string().valid('beginner', 'intermediate', 'advanced').required(),
@@ -53,11 +54,11 @@ export const startTestHandler = async (req: Request, res: Response): Promise<voi
     });
 
     // Filter questions based on experience level if needed
-    let questions = allQuestions;
+    let questionsToSend = allQuestions;
     
     // For beginners, we might skip some advanced questions
     if (userContext.experienceLevel === 'beginner') {
-      questions = allQuestions.filter(q => {
+      questionsToSend = allQuestions.filter((q: any) => {
         // Include all questions for now, but this can be customized
         return true;
       });
@@ -69,7 +70,7 @@ export const startTestHandler = async (req: Request, res: Response): Promise<voi
       success: true,
       data: {
         sessionId,
-        questions: questions.map(q => ({
+        questions: questionsToSend.map((q: any) => ({
           id: q.id,
           section: q.section,
           type: q.type,

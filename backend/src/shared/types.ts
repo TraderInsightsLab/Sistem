@@ -1,25 +1,35 @@
-// Shared types pentru TraderInsightsLab Backend
+// Shared TypeScript types for TraderInsightsLab
 
 export interface UserContext {
   email: string;
-  age: number;
   experienceLevel: 'beginner' | 'intermediate' | 'advanced';
+  age: number;
   tradingGoals: string[];
   riskTolerance: 'low' | 'medium' | 'high';
   preferredMarkets: string[];
-  // Backward compatibility
-  experience?: 'incepator' | 'intermediar' | 'avansat';
-  capitalDisponibil?: number;
-  obiectiveTrading?: string[];
-  strategiiPreferate?: string[];
-  motivatieParticipare?: string;
+}
+
+export interface TestQuestion {
+  id: string;
+  section: 'autoportret' | 'scenarii' | 'cognitive';
+  type: 'single-choice' | 'multiple-choice' | 'scale' | 'cognitive-game';
+  question: string;
+  options?: Array<{
+    id: string;
+    text: string;
+    value: number;
+  }>;
+  gameConfig?: {
+    type: 'risk-assessment' | 'decision-timing' | 'emotional-control';
+    parameters: Record<string, any>;
+  };
 }
 
 export interface TestAnswer {
   questionId: string;
   answer: string | number | string[];
   timestamp: number;
-  responseTime?: number;
+  responseTime: number;
   gameResults?: {
     score: number;
     metrics: Record<string, number>;
@@ -30,46 +40,14 @@ export interface TestSession {
   id: string;
   userContext: UserContext;
   answers: TestAnswer[];
-  currentSection?: 'autoportret' | 'scenarii' | 'cognitive' | 'completed';
-  currentQuestionIndex?: number;
   startedAt: number;
   completedAt?: number;
-  status?: 'in-progress' | 'completed' | 'paid' | 'analyzed';
   paymentStatus: 'pending' | 'paid' | 'failed';
   reportStatus: 'pending' | 'generated' | 'sent';
   fullReportData?: AIAnalysisResult;
   teaserData?: {
     archetype: string;
     mainStrength: string;
-  };
-  analysisResults?: AnalysisResult;
-}
-
-export interface PaymentSession {
-  id: string;
-  testSessionId: string;
-  stripeSessionId: string;
-  amount: number;
-  currency: string;
-  status: 'pending' | 'completed' | 'failed';
-  createdAt: number;
-  completedAt?: number;
-}
-
-export interface AnalysisResult {
-  profile: string;
-  strengths: string[];
-  weaknesses: string[];
-  recommendations: string[];
-  tradingStyle: string;
-  riskTolerance: 'low' | 'medium' | 'high';
-  confidence: number;
-  detailedAnalysis?: {
-    psychologicalProfile: string;
-    riskAssessment: string;
-    tradingRecommendations: string;
-    emotionalIntelligence: string;
-    decisionMaking: string;
   };
 }
 
@@ -125,7 +103,52 @@ export interface AIAnalysisResult {
     decisionMaking: string;
     discipline: number;
   };
-  analysisResults?: AnalysisResult;
-  confidence?: number;
-  processingTime?: number;
+}
+
+export interface PaymentSession {
+  sessionId: string;
+  stripeSessionId: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'completed' | 'failed';
+  createdAt: number;
+}
+
+// API Response types
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: {
+    message: string;
+    code: string;
+  };
+}
+
+export interface StartTestResponse {
+  sessionId: string;
+  questions: TestQuestion[];
+}
+
+export interface SaveAnswerRequest {
+  sessionId: string;
+  answer: TestAnswer;
+}
+
+export interface ProcessResultsResponse {
+  teaser: {
+    archetype: string;
+    mainStrength: string;
+  };
+  paymentUrl: string;
+}
+
+// Environment configuration
+export interface Config {
+  apiUrl: string;
+  stripePublishableKey: string;
+  stripeSecretKey: string;
+  sendGridApiKey: string;
+  vertexAiProjectId: string;
+  vertexAiLocation: string;
+  vertexAiModelId: string;
 }

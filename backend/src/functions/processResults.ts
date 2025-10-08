@@ -9,14 +9,14 @@ const processResultsSchema = Joi.object({
   sessionId: Joi.string().required()
 });
 
-export const processResultsHandler = async (req: Request, res: Response) => {
+export const processResultsHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Processing test results');
     
     // Validate request body
     const { error, value } = processResultsSchema.validate(req.body);
     if (error) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: {
           message: 'Invalid request data',
@@ -24,6 +24,7 @@ export const processResultsHandler = async (req: Request, res: Response) => {
           details: error.details
         }
       });
+      return;
     }
 
     const { sessionId } = value;
@@ -31,24 +32,26 @@ export const processResultsHandler = async (req: Request, res: Response) => {
     // Get test session
     const session = await databaseService.getTestSession(sessionId);
     if (!session) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: {
           message: 'Test session not found',
           code: 'SESSION_NOT_FOUND'
         }
       });
+      return;
     }
 
     // Check if session has enough answers
     if (!session.answers || session.answers.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: {
           message: 'No answers found for this session',
           code: 'NO_ANSWERS'
         }
       });
+      return;
     }
 
     // Prepare data for AI analysis

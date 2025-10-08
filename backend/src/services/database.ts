@@ -5,13 +5,10 @@ import { TestSession, PaymentSession } from '../types';
 
 // Initialize Firebase Admin
 if (!getApps().length) {
+  const serviceAccount = require('../service-account-key.json');
   initializeApp({
-    credential: cert({
-      projectId: process.env.VERTEX_AI_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-    storageBucket: `${process.env.VERTEX_AI_PROJECT_ID}.appspot.com`
+    credential: cert(serviceAccount),
+    storageBucket: `${serviceAccount.project_id}.appspot.com`
   });
 }
 
@@ -83,7 +80,7 @@ export class DatabaseService {
     
     // Also update the test session payment status
     await this.updateTestSession(sessionId, { 
-      paymentStatus: status === 'completed' ? 'completed' : status === 'failed' ? 'failed' : 'pending'
+      paymentStatus: status === 'completed' ? 'paid' : status === 'failed' ? 'failed' : 'pending'
     });
   }
 
@@ -129,6 +126,12 @@ export class DatabaseService {
       id: doc.id,
       ...doc.data()
     })) as TestSession[];
+  }
+
+  async updateReportStatus(sessionId: string, status: 'pending' | 'generated' | 'sent'): Promise<void> {
+    await db.collection('testSessions').doc(sessionId).update({
+      reportStatus: status
+    });
   }
 }
 
