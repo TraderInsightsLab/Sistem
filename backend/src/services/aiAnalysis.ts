@@ -63,6 +63,12 @@ SESSION DATA:
 - Total Time: ${sessionMetadata.totalTime}ms
 - Section Performance: ${JSON.stringify(sessionMetadata.sections)}
 
+COGNITIVE GAME ANALYSIS GUIDELINES:
+For the cognitive games, pay special attention to:
+1. RISK ASSESSMENT GAME: Analyze risk preference levels vs stated risk tolerance - identify gaps
+2. DECISION TIMING GAME: Quick decisions indicate confidence, timeouts suggest overthinking
+3. EMOTIONAL CONTROL GAME: Stability percentage and panic reactions reveal true emotional discipline
+
 ANALYSIS REQUIREMENTS:
 Please provide a JSON response with the following structure:
 
@@ -124,10 +130,52 @@ Respond ONLY with valid JSON, no additional text.
   
   private formatAnswersForPrompt(answers: any[]): string {
     return answers.map(answer => {
-      const gameResults = answer.gameResults ? 
-        `Game Results: ${JSON.stringify(answer.gameResults)}` : '';
+      let formattedAnswer = `Question ${answer.questionId}: ${answer.answer} (Response time: ${answer.responseTime}ms)`;
       
-      return `Question ${answer.questionId}: ${answer.answer} (Response time: ${answer.responseTime}ms) ${gameResults}`;
+      // Enhanced formatting for cognitive game results
+      if (answer.gameResults) {
+        const results = typeof answer.gameResults === 'string' 
+          ? JSON.parse(answer.gameResults) 
+          : answer.gameResults;
+        
+        if (answer.questionId.includes('cog_')) {
+          // Determine game type based on question ID or results
+          if (answer.questionId === 'cog_1' || results.metrics?.riskLevel) {
+            // Risk Assessment Game
+            formattedAnswer += `
+            RISK ASSESSMENT GAME:
+            - Final Score: ${results.score}
+            - Risk Preference Level: ${results.metrics?.riskLevel || 'N/A'}
+            - Average Response Time: ${results.metrics?.averageResponseTime || 'N/A'}ms
+            - Total Game Time: ${results.metrics?.totalTime || 'N/A'}ms`;
+          } else if (answer.questionId === 'cog_2' || results.metrics?.quickDecisions) {
+            // Decision Timing Game  
+            formattedAnswer += `
+            DECISION TIMING GAME:
+            - Quick Decisions Made: ${results.metrics?.quickDecisions || 0}
+            - Timeouts (No Decision): ${results.metrics?.timeouts || 0}
+            - Average Response Time: ${results.metrics?.averageResponseTime || 'N/A'}ms
+            - Performance Under Pressure: ${results.metrics?.quickDecisions > 4 ? 'Good' : 'Needs Improvement'}`;
+          } else if (answer.questionId === 'cog_3' || results.metrics?.stabilityPercentage) {
+            // Emotional Control Game
+            formattedAnswer += `
+            EMOTIONAL CONTROL GAME:
+            - Emotional Stability: ${results.metrics?.stabilityPercentage || 'N/A'}%
+            - Calm Reactions: ${results.metrics?.calmReactions || 0}
+            - Panic Reactions: ${results.metrics?.panicReactions || 0}
+            - Final Emotional State: ${results.metrics?.finalEmotionalState || 'N/A'}/100
+            - Emotional Consistency: ${results.metrics?.averageEmotionalState || 'N/A'}`;
+          } else {
+            // Generic cognitive game results
+            formattedAnswer += `
+            COGNITIVE GAME RESULTS: ${JSON.stringify(results)}`;
+          }
+        } else {
+          formattedAnswer += ` Game Results: ${JSON.stringify(results)}`;
+        }
+      }
+      
+      return formattedAnswer;
     }).join('\n');
   }
   

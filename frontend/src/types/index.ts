@@ -23,13 +23,20 @@ export interface TestAnswer {
 export interface TestQuestion {
   id: string;
   section: 'autoportret' | 'scenarii' | 'cognitive';
-  type: 'single' | 'multiple' | 'scale' | 'cognitive';
+  type: 'single-choice' | 'multiple-choice' | 'scale' | 'cognitive-game';
   question: string;
-  options?: string[];
+  options?: Array<{
+    id: string;
+    text: string;
+    value: number;
+  }>;
   scaleMin?: number;
   scaleMax?: number;
   scaleLabels?: { min: string; max: string };
-  cognitiveType?: 'reaction' | 'pattern' | 'memory' | 'decision';
+  gameConfig?: {
+    type: 'risk-assessment' | 'decision-timing' | 'emotional-control';
+    parameters: Record<string, any>;
+  };
 }
 
 export interface TestSession {

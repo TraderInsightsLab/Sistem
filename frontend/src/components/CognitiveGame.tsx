@@ -247,14 +247,227 @@ export function CognitiveGame({ gameConfig, onComplete }: CognitiveGameProps) {
     );
   }
 
-  // Emotional Control Game (simplified version)
+  // Emotional Control Game
+  if (gameConfig.type === 'emotional-control') {
+    const [phase, setPhase] = useState(0);
+    const [emotionalState, setEmotionalState] = useState(50); // 0-100 scale
+    const [reactions, setReactions] = useState<number[]>([]);
+    const [currentEvent, setCurrentEvent] = useState('');
+    const [phaseStartTime, setPhaseStartTime] = useState(0);
+    
+    const stressEvents = [
+      { text: "Ai pierdut 20% din portofoliu într-o zi!", impact: -15, type: 'negative' },
+      { text: "O investiție a crescut cu 50% peste noapte!", impact: 10, type: 'positive' },
+      { text: "Piața se prăbușește! Toți indicii sunt în roșu!", impact: -20, type: 'negative' },
+      { text: "Breaking News: Criză bancară globală!", impact: -25, type: 'negative' },
+      { text: "Ai ratat o oportunitate uriașă de profit!", impact: -10, type: 'regret' },
+      { text: "Profitul tău anual este de 3x peste așteptări!", impact: 15, type: 'positive' },
+      { text: "Un expert celebru critică strategia ta!", impact: -12, type: 'negative' },
+      { text: "Clientul tău cel mai mare se retrage!", impact: -18, type: 'negative' }
+    ];
+
+    useEffect(() => {
+      if (gameState === 'playing' && phase < stressEvents.length) {
+        setPhaseStartTime(Date.now());
+        setCurrentEvent(stressEvents[phase].text);
+        
+        // Apply emotional impact after 2 seconds
+        const impactTimer = setTimeout(() => {
+          const event = stressEvents[phase];
+          setEmotionalState(prev => Math.max(0, Math.min(100, prev + event.impact)));
+        }, 2000);
+
+        // Auto-advance after 8 seconds if no reaction
+        const autoTimer = setTimeout(() => {
+          handleReaction('no-reaction');
+        }, 8000);
+
+        return () => {
+          clearTimeout(impactTimer);
+          clearTimeout(autoTimer);
+        };
+      } else if (phase >= stressEvents.length && gameState === 'playing') {
+        completeEmotionalGame();
+      }
+    }, [gameState, phase]);
+
+    const handleReaction = (reactionType: 'calm' | 'stressed' | 'panic' | 'no-reaction') => {
+      const reactionTime = Date.now() - phaseStartTime;
+      const reactionScore = {
+        'calm': 5,
+        'stressed': 3,
+        'panic': 1,
+        'no-reaction': 2
+      }[reactionType];
+
+      setReactions(prev => [...prev, reactionScore]);
+      setScore(prev => prev + reactionScore);
+      
+      // Adjust emotional state based on reaction
+      const stateAdjustment = {
+        'calm': 5,
+        'stressed': -2,
+        'panic': -5,
+        'no-reaction': -1
+      }[reactionType];
+      
+      setEmotionalState(prev => Math.max(0, Math.min(100, prev + stateAdjustment)));
+      
+      setMetrics(prev => ({
+        ...prev,
+        totalResponseTime: (prev.totalResponseTime || 0) + reactionTime,
+        emotionalStability: emotionalState,
+        panicReactions: (prev.panicReactions || 0) + (reactionType === 'panic' ? 1 : 0),
+        calmReactions: (prev.calmReactions || 0) + (reactionType === 'calm' ? 1 : 0),
+        averageEmotionalState: (prev.averageEmotionalState || 50) * 0.9 + emotionalState * 0.1
+      }));
+
+      setPhase(prev => prev + 1);
+    };
+
+    const completeEmotionalGame = () => {
+      const finalScore = reactions.reduce((sum, r) => sum + r, 0);
+      const stability = Math.round((reactions.filter(r => r >= 4).length / reactions.length) * 100);
+      
+      setMetrics(prev => ({
+        ...prev,
+        finalEmotionalState: emotionalState,
+        stabilityPercentage: stability,
+        totalScore: finalScore
+      }));
+      
+      setScore(finalScore);
+      completeGame();
+    };
+
+    if (gameState === 'instructions') {
+      return (
+        <Card className="p-6">
+          <CardContent>
+            <h3 className="text-lg font-semibold mb-4">Testul Controlului Emoțional</h3>
+            <div className="space-y-3 text-sm text-gray-600">
+              <p>Vei fi expus la 8 evenimente stresante din lumea tradingului.</p>
+              <p>Pentru fiecare eveniment, alege cum reacționezi emotional.</p>
+              <p>Testul măsoară stabilitatea ta sub presiune continuă.</p>
+              <p>Nu există răspunsuri greșite - fii sincer cu reacțiile tale!</p>
+            </div>
+            <Button onClick={startGame} className="mt-6">
+              Începe Testul
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    if (gameState === 'playing') {
+      const emotionalColor = emotionalState > 70 ? 'text-green-600' : 
+                           emotionalState > 40 ? 'text-yellow-600' : 'text-red-600';
+      
+      return (
+        <Card className="p-6">
+          <CardContent>
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold">Evenimentul {phase + 1} din {stressEvents.length}</h3>
+              <div className="mt-2">
+                <div className="text-sm text-gray-600">Starea emoțională</div>
+                <div className={`text-xl font-bold ${emotionalColor}`}>
+                  {emotionalState}/100
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-500 ${
+                      emotionalState > 70 ? 'bg-green-500' : 
+                      emotionalState > 40 ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${emotionalState}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center mb-6 p-4 bg-gray-100 rounded-lg">
+              <p className="text-lg font-medium">{currentEvent}</p>
+            </div>
+            
+            <div className="space-y-3">
+              <p className="text-center text-sm text-gray-600 mb-4">
+                Cum reacționezi la această situație?
+              </p>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => handleReaction('calm')}
+                  className="bg-green-600 hover:bg-green-700 h-auto py-3"
+                >
+                  <div className="text-center">
+                    <div className="font-medium">😌 Calm</div>
+                    <div className="text-xs">Analizez obiectiv</div>
+                  </div>
+                </Button>
+                
+                <Button
+                  onClick={() => handleReaction('stressed')}
+                  className="bg-yellow-600 hover:bg-yellow-700 h-auto py-3"
+                >
+                  <div className="text-center">
+                    <div className="font-medium">😰 Stresat</div>
+                    <div className="text-xs">Mă afectează moderat</div>
+                  </div>
+                </Button>
+                
+                <Button
+                  onClick={() => handleReaction('panic')}
+                  className="bg-red-600 hover:bg-red-700 h-auto py-3"
+                >
+                  <div className="text-center">
+                    <div className="font-medium">😱 Panică</div>
+                    <div className="text-xs">Mă copleșește</div>
+                  </div>
+                </Button>
+                
+                <Button
+                  onClick={() => handleReaction('no-reaction')}
+                  variant="outline"
+                  className="h-auto py-3"
+                >
+                  <div className="text-center">
+                    <div className="font-medium">😐 Neutru</div>
+                    <div className="text-xs">Nu mă afectează</div>
+                  </div>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card className="p-6">
+        <CardContent className="text-center">
+          <h3 className="text-lg font-semibold mb-4">Test Finalizat!</h3>
+          <div className="space-y-2">
+            <p className="text-xl">Stabilitate emoțională: {metrics.stabilityPercentage}%</p>
+            <p className="text-sm text-gray-600">
+              Reacții calme: {metrics.calmReactions || 0} din {stressEvents.length}
+            </p>
+            <p className="text-sm text-gray-600">
+              Stare finală: {emotionalState}/100
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Fallback for unknown game types
   return (
     <Card className="p-6">
       <CardContent className="text-center">
-        <h3 className="text-lg font-semibold mb-4">Controlul Emoțional</h3>
-        <p className="mb-4">Acest test măsoară stabilitatea emoțională sub presiune.</p>
-        <Button onClick={() => onComplete({ score: 100, metrics: { stability: 85 } })}>
-          Simulează Completarea
+        <h3 className="text-lg font-semibold mb-4">Tip de joc necunoscut</h3>
+        <p className="mb-4">Nu pot rula acest tip de test: {gameConfig.type}</p>
+        <Button onClick={() => onComplete({ score: 0, metrics: { error: 1 } })}>
+          Sari peste
         </Button>
       </CardContent>
     </Card>

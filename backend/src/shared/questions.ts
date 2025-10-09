@@ -162,9 +162,11 @@ export const cognitiveQuestions: TestQuestion[] = [
     gameConfig: {
       type: 'emotional-control',
       parameters: {
-        stressors: ['losing_streak', 'time_pressure', 'large_amounts'],
-        duration: 120,
-        measureStability: true
+        events: 8,
+        stressTypes: ['market_crash', 'profit_euphoria', 'expert_criticism', 'missed_opportunity'],
+        measureStability: true,
+        emotionalRange: { min: 0, max: 100 },
+        initialState: 50
       }
     }
   }

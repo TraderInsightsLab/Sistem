@@ -5,6 +5,7 @@ import { useTestStore } from '@/store/testStore';
 import { TestQuestion as TestQuestionType, TestAnswer } from '../types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { CognitiveGame } from './CognitiveGame';
 
 interface TestQuestionProps {
   question: TestQuestionType;
@@ -41,6 +42,42 @@ export function TestQuestion({ question, onAnswerSubmit }: TestQuestionProps) {
     }
   };
 
+  const handleGameComplete = async (results: { score: number; metrics: Record<string, number> }) => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    
+    try {
+      const answer: TestAnswer = {
+        questionId: question.id,
+        answer: JSON.stringify(results), // Store game results as JSON string
+        timestamp: Date.now()
+      };
+
+      await saveAnswer(answer);
+      onAnswerSubmit();
+    } catch (error) {
+      console.error('Error submitting game results:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle cognitive games
+  if (question.type === 'cognitive-game' && question.gameConfig) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold mb-4">{question.question}</h2>
+        </div>
+        <CognitiveGame 
+          gameConfig={question.gameConfig}
+          onComplete={handleGameComplete}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -48,31 +85,31 @@ export function TestQuestion({ question, onAnswerSubmit }: TestQuestionProps) {
       </div>
 
       <div className="space-y-3">
-        {question.type === 'single' && question.options && (
+        {question.type === 'single-choice' && question.options && (
           <div className="space-y-3">
-            {question.options.map((option: string, index: number) => (
+            {question.options.map((option, index) => (
               <Card
-                key={index}
+                key={option.id}
                 className={`cursor-pointer transition-all border-2 ${
-                  selectedAnswer === option
+                  selectedAnswer === option.id
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
-                onClick={() => handleAnswerChange(option)}
+                onClick={() => handleAnswerChange(option.id)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
                     <div className={`w-4 h-4 rounded-full border-2 mt-0.5 ${
-                      selectedAnswer === option
+                      selectedAnswer === option.id
                         ? 'border-blue-500 bg-blue-500'
                         : 'border-gray-300'
                     }`}>
-                      {selectedAnswer === option && (
+                      {selectedAnswer === option.id && (
                         <div className="w-2 h-2 bg-white rounded-full m-0.5"></div>
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="text-gray-800">{option}</p>
+                      <p className="text-gray-800">{option.text}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -81,15 +118,15 @@ export function TestQuestion({ question, onAnswerSubmit }: TestQuestionProps) {
           </div>
         )}
 
-        {question.type === 'multiple' && question.options && (
+        {question.type === 'multiple-choice' && question.options && (
           <div className="space-y-3">
-            {question.options.map((option: string, index: number) => {
+            {question.options.map((option, index) => {
               const currentSelections = Array.isArray(selectedAnswer) ? selectedAnswer : [];
-              const isSelected = currentSelections.includes(option);
+              const isSelected = currentSelections.includes(option.id);
               
               return (
                 <Card
-                  key={index}
+                  key={option.id}
                   className={`cursor-pointer transition-all border-2 ${
                     isSelected
                       ? 'border-blue-500 bg-blue-50'
@@ -97,8 +134,8 @@ export function TestQuestion({ question, onAnswerSubmit }: TestQuestionProps) {
                   }`}
                   onClick={() => {
                     const newSelections = isSelected
-                      ? currentSelections.filter(id => id !== option)
-                      : [...currentSelections, option];
+                      ? currentSelections.filter(id => id !== option.id)
+                      : [...currentSelections, option.id];
                     handleAnswerChange(newSelections);
                   }}
                 >
@@ -114,7 +151,7 @@ export function TestQuestion({ question, onAnswerSubmit }: TestQuestionProps) {
                         )}
                       </div>
                       <div className="flex-1">
-                        <p className="text-gray-800">{option}</p>
+                        <p className="text-gray-800">{option.text}</p>
                       </div>
                     </div>
                   </CardContent>

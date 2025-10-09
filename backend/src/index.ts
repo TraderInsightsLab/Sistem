@@ -16,6 +16,8 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3000',
+    'https://traderinsightslab.web.app',
+    'https://traderinsightslab.firebaseapp.com',
     'https://trader-insights-lab.web.app',
     'https://trader-insights-lab.firebaseapp.com'
   ],
