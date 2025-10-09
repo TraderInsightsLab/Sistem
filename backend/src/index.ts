@@ -36,13 +36,13 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 });
 
 // API Routes
-app.post('/api/startTest', startTestHandler);
-app.post('/api/saveAnswer', saveAnswerHandler);
-app.post('/api/processResults', processResultsHandler);
-app.post('/api/generateReport', generateAndSendReportHandler);
+app.post('/startTest', startTestHandler);
+app.post('/saveAnswer', saveAnswerHandler);
+app.post('/processResults', processResultsHandler);
+app.post('/generateReport', generateAndSendReportHandler);
 
 // Stripe webhook endpoint (requires raw body)
-app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), handlePaymentSuccessHandler);
+app.post('/webhook/stripe', express.raw({ type: 'application/json' }), handlePaymentSuccessHandler);
 
 // Error handling middleware
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -73,7 +73,8 @@ export const api = functions
   .region('us-central1')
   .runWith({
     timeoutSeconds: 300,
-    memory: '1GB'
+    memory: '1GB',
+    invoker: 'public'
   })
   .https
   .onRequest(app);

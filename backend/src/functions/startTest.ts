@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import * as Joi from 'joi';
 import { databaseService } from '../services/database';
 import { UserContext } from '../types';
-import { allQuestions } from '../shared/questions';
+// import { allQuestions } from '../shared/questions';
 
 const userContextSchema = Joi.object({
   email: Joi.string().email().required(),
@@ -54,11 +54,39 @@ export const startTestHandler = async (req: Request, res: Response): Promise<voi
     });
 
     // Filter questions based on experience level if needed
-    let questionsToSend = allQuestions;
+    let questionsToSend = [
+      {
+        id: 'auto_1',
+        section: 'autoportret',
+        type: 'scale',
+        question: 'Cât de disciplinat te consideri în general în viața ta?',
+        options: [
+          { id: '1', text: 'Deloc disciplinat', value: 1 },
+          { id: '2', text: 'Puțin disciplinat', value: 2 },
+          { id: '3', text: 'Moderat disciplinat', value: 3 },
+          { id: '4', text: 'Destul de disciplinat', value: 4 },
+          { id: '5', text: 'Foarte disciplinat', value: 5 }
+        ]
+      },
+      {
+        id: 'cognitive_1',
+        section: 'cognitive',
+        type: 'cognitive-game',
+        question: 'Test de control emoțional',
+        gameConfig: {
+          type: 'emotional-control',
+          duration: 60,
+          events: [
+            { message: 'Ai pierdut -15% dintr-o investiție importantă', type: 'loss', severity: 'high' },
+            { message: 'Piața se prăbușește cu -8% astăzi', type: 'market', severity: 'high' }
+          ]
+        }
+      }
+    ];
     
     // For beginners, we might skip some advanced questions
     if (userContext.experienceLevel === 'beginner') {
-      questionsToSend = allQuestions.filter((q: any) => {
+      questionsToSend = questionsToSend.filter((q: any) => {
         // Include all questions for now, but this can be customized
         return true;
       });

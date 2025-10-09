@@ -9,21 +9,47 @@ import { Brain, Target, Shield, TrendingUp, Users, Star } from 'lucide-react';
 
 export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { initializeTest } = useTestStore();
 
   const handleStartTest = () => {
     setShowOnboarding(true);
+    setError(null);
   };
 
-  const handleOnboardingComplete = (userContext: any) => {
-    initializeTest(userContext);
-    // Redirect to test page will be handled by the test store
+  const handleOnboardingComplete = async (userContext: any) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      await initializeTest(userContext);
+      // Redirect will be handled by the test store if successful
+    } catch (error) {
+      console.error('Failed to initialize test:', error);
+      setError('Nu am putut iniția testul. Te rog încearcă din nou.');
+      setIsLoading(false);
+    }
   };
 
   if (showOnboarding) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <OnboardingForm onComplete={handleOnboardingComplete} />
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+            <button 
+              onClick={() => setError(null)}
+              className="ml-2 text-red-800 hover:text-red-900"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+        <OnboardingForm 
+          onComplete={handleOnboardingComplete} 
+          isLoading={isLoading}
+        />
       </div>
     );
   }

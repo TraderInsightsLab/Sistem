@@ -54,9 +54,16 @@ export const useTestStore = create<TestState>((set, get) => ({
   initializeTest: async (userContext: UserContext) => {
     set({ isLoading: true });
     
+    console.log('🔍 DEBUG Frontend:');
+    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
+    console.log('User context:', userContext);
+    
     try {
+      const fullUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/startTest`;
+      console.log('Full URL:', fullUrl);
+      
       // Call backend API to create test session
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/startTest`, {
+      const response = await fetch(fullUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,21 +71,28 @@ export const useTestStore = create<TestState>((set, get) => ({
         body: JSON.stringify({ userContext }),
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
-        throw new Error('Failed to start test');
+        const errorText = await response.text();
+        console.error('Response error:', errorText);
+        throw new Error(`Failed to start test: ${response.status} - ${errorText}`);
       }
       
       const data = await response.json();
+      console.log('Response data:', data);
       
       set({
-        sessionId: data.sessionId,
+        sessionId: data.data.sessionId,
         userContext,
-        questions: data.questions || allQuestions,
+        questions: data.data.questions || allQuestions,
         currentQuestionIndex: 0,
         answers: [],
         isLoading: false,
       });
       
+      console.log('✅ Test initialized successfully, redirecting to /test');
       // Redirect to test page
       window.location.href = '/test';
       

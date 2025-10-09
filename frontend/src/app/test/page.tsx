@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTestStore } from '@/store/testStore';
 import { TestQuestion } from '@/components/TestQuestion';
 import { ProgressBar } from '@/components/ProgressBar';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 export default function TestPage() {
+  const [mounted, setMounted] = useState(false);
   const {
     sessionId,
     getCurrentQuestion,
@@ -28,11 +29,20 @@ export default function TestPage() {
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
   useEffect(() => {
-    // Redirect to home if no active session
-    if (!sessionId) {
-      window.location.href = '/';
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // Only redirect after component is mounted and store is hydrated
+    if (mounted && !sessionId) {
+      console.log('No session found, redirecting to home');
+      const timeoutId = setTimeout(() => {
+        window.location.href = '/';
+      }, 1000); // Give store time to hydrate
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [sessionId]);
+  }, [mounted, sessionId]);
 
   const handleNext = () => {
     if (isLastQuestion) {
@@ -42,11 +52,23 @@ export default function TestPage() {
     }
   };
 
+  if (!mounted) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <p>Se încarcă aplicația...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!sessionId || !currentQuestion) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <p>Se încarcă testul...</p>
+          <p>Se încarcă testul... Dacă nu se încarcă în 3 secunde, veți fi redirecționat la pagina principală.</p>
+          <p className="text-sm text-gray-500 mt-2">SessionId: {sessionId || 'Nu există'}</p>
+          <p className="text-sm text-gray-500">Questions: {questions?.length || 0}</p>
         </div>
       </div>
     );

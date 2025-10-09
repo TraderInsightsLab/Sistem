@@ -8,9 +8,10 @@ import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface OnboardingFormProps {
   onComplete: (userContext: UserContext) => void;
+  isLoading?: boolean;
 }
 
-export function OnboardingForm({ onComplete }: OnboardingFormProps) {
+export function OnboardingForm({ onComplete, isLoading = false }: OnboardingFormProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<UserContext>>({
     experienceLevel: 'beginner',
@@ -245,11 +246,11 @@ export function OnboardingForm({ onComplete }: OnboardingFormProps) {
             ) : (
               <Button
                 onClick={handleComplete}
-                disabled={!formData.email || !formData.age || !formData.experienceLevel || !formData.riskTolerance}
+                disabled={!formData.email || !formData.age || !formData.experienceLevel || !formData.riskTolerance || isLoading}
                 className="bg-green-600 hover:bg-green-700 flex items-center"
               >
-                Începe Testul
-                <ArrowRight className="ml-2 h-4 w-4" />
+                {isLoading ? 'Se încarcă...' : 'Începe Testul'}
+                {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
               </Button>
             )}
           </div>

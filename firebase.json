@@ -27,10 +27,19 @@
     ],
     "rewrites": [
       {
+        "source": "/test",
+        "destination": "/test.html"
+      },
+      {
+        "source": "/results",
+        "destination": "/results.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
-    ]
+    ],
+    "trailingSlash": false
   },
   "storage": {
     "rules": "storage.rules"
