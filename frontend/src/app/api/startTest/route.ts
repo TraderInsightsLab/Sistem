@@ -27,6 +27,6 @@ export async function POST(request: NextRequest) {
     current_question_index: 0, total_questions: questions.length
   }]).select().single();
   
-  if (error) return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
+  if (error) return NextResponse.json({ error: 'Failed to create session', details: error.message, code: error.code }, { status: 500 });
   return NextResponse.json({ sessionId: session.id, questions, currentQuestionIndex: 0 });
 }
