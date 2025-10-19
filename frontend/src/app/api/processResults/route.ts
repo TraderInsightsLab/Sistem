@@ -8,13 +8,32 @@ export async function POST(request: NextRequest) {
   if (!sessionId) return NextResponse.json({ error: 'sessionId required' }, { status: 400 });
   
   const { data: session, error: sessionError } = await supabase.from('test_sessions').select('*').eq('id', sessionId).single();
-  if (sessionError || !session) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+  if (sessionError || !session) {
+    console.error('Session error:', sessionError);
+    return NextResponse.json({ error: 'Session not found', details: sessionError?.message }, { status: 404 });
+  }
   
-  const { data: answers } = await supabase.from('test_answers').select('*').eq('session_id', sessionId).order('answered_at');
+  const { data: answers, error: answersError } = await supabase.from('test_answers').select('*').eq('session_id', sessionId).order('created_at');
   
-  const analysis = { traderType: 'Balanced', riskTolerance: 'Medium', strengthsWeaknesses: { strengths: ['Analytical thinking'], weaknesses: ['Decision speed'] }, recommendations: ['Practice trading', 'Keep journal'] };
+  if (answersError) {
+    console.error('Answers error:', answersError);
+  }
   
-  await supabase.from('test_sessions').update({ status: 'completed', analysis_result: analysis, completed_at: new Date().toISOString() }).eq('id', sessionId);
+  // Temporary hardcoded analysis
+  const analysis = { 
+    traderType: 'Balanced', 
+    riskTolerance: 'Medium', 
+    strengthsWeaknesses: { 
+      strengths: ['Analytical thinking', 'Risk management'], 
+      weaknesses: ['Decision speed under pressure'] 
+    }, 
+    recommendations: ['Practice paper trading', 'Keep a trading journal', 'Focus on risk management'] 
+  };
+  
+  await supabase.from('test_sessions').update({ 
+    status: 'completed', 
+    completed_at: new Date().toISOString() 
+  }).eq('id', sessionId);
   
   return NextResponse.json({ sessionId, analysis, answersCount: answers?.length || 0 });
 }
