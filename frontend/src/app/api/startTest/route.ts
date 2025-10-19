@@ -23,8 +23,10 @@ export async function POST(request: NextRequest) {
   if (!userContext?.email) return NextResponse.json({ error: 'Email required' }, { status: 400 });
   
   const { data: session, error } = await supabase.from('test_sessions').insert([{
-    email: userContext.email, user_context: userContext, status: 'in_progress',
-    current_question_index: 0, total_questions: questions.length
+    user_email: userContext.email,
+    user_context: userContext,
+    status: 'in_progress',
+    current_question_index: 0
   }]).select().single();
   
   if (error) return NextResponse.json({ error: 'Failed to create session', details: error.message, code: error.code }, { status: 500 });
