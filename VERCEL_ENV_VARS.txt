@@ -1,0 +1,32 @@
+# Environment Variables pentru Vercel Dashboard
+# Copiază aceste valori în Vercel → Settings → Environment Variables
+
+## Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://fgyvghiovhujyhvtdxpp.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZneXZnaGlvdmh1anlodnRkeHBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4MjYyMjUsImV4cCI6MjA3NjQwMjIyNX0.q_NOAHSBwvdE-yAZtrPt5x2_kfJ55OzY-0LX79e6yTY
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZneXZnaGlvdmh1anlodnRkeHBwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDgyNjIyNSwiZXhwIjoyMDc2NDAyMjI1fQ.xcgQog3RvwBUJ0Fi6YF1-2Bqye20kCHlBw4jgC-fatk
+
+## Stripe Configuration
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51R1or5GVlY8clYXhAiwRRfRr7MYOu80QvGYLpJmy9WztN5Wp62BuQKsG5wKOmgAAiiM1jusJkH7jrCKBOkW1QgbH00FdwwbWN4
+STRIPE_SECRET_KEY=sk_test_51R1or5GVlY8clYXhsG5QFx1vi4pMgptuwtqasyCCc4YINzeDZh7rqXf8vc0N0EuTY18WbAMgWVrFmMXkqgGRZA3d00XVWFHzHf
+STRIPE_WEBHOOK_SECRET=whsec_YOUR_WEBHOOK_SECRET_HERE
+
+## Application
+NEXT_PUBLIC_BASE_URL=https://your-app.vercel.app
+
+## Optional: Vertex AI (pentru analiză AI avansată)
+VERTEX_AI_PROJECT_ID=traderinsightslab
+VERTEX_AI_LOCATION=us-central1
+VERTEX_AI_MODEL=gemini-1.5-pro
+
+## Optional: SendGrid (pentru trimitere email)
+SENDGRID_API_KEY=YOUR_SENDGRID_KEY_HERE
+
+---
+
+# Instrucțiuni:
+1. Mergi pe https://vercel.com/TraderInsightsLab
+2. Selectează proiectul după import
+3. Click Settings → Environment Variables
+4. Adaugă fiecare variabilă (bifează Production, Preview, Development)
+5. După ce adaugi NEXT_PUBLIC_BASE_URL cu URL-ul real, fă redeploy

@@ -115,8 +115,8 @@ firebase-debug.*.log
 *-key.json
 service-account-key.json
 
-# Build directories
-lib/
+# Build directories (backend compiled files)
+backend/lib/
 build/
 
 # IDE
@@ -141,3 +141,4 @@ coverage/
 **/.env
 **/service-account-key*.json
 firebase-debug.log
+.vercel

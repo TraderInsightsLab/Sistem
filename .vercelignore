@@ -1,0 +1,46 @@
+# Firebase files (not needed for Vercel)
+firebase.json
+firestore.indexes.json
+firestore.rules
+storage.rules
+.firebase/
+firebase-debug.log
+
+# Backend (Firebase Functions - not used anymore)
+backend/
+
+# Environment files (configured in Vercel dashboard)
+.env
+.env.local
+.env*.local
+
+# Build directories
+lib/
+build/
+.next/
+out/
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Service account keys
+*-key.json
+service-account-key*.json
+Firebase key/

@@ -1,8 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/out",
-  "installCommand": "cd frontend && npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "out",
   "framework": "nextjs",
   "regions": ["fra1"],
   "functions": {
