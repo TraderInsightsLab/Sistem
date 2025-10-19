@@ -24,7 +24,7 @@ interface TestState {
   paymentStatus: 'pending' | 'processing' | 'paid' | 'failed';
   
   // Actions
-  initializeTest: (userContext: UserContext) => Promise<void>;
+  initializeTest: (userContext: UserContext) => Promise<boolean>;
   saveAnswer: (answer: TestAnswer) => Promise<void>;
   nextQuestion: () => void;
   previousQuestion: () => void;
@@ -39,12 +39,12 @@ interface TestState {
 }
 
 export const useTestStore = create<TestState>((set, get) => ({
-  // Initial state
-  sessionId: null,
-  userContext: null,
-  currentQuestionIndex: 0,
-  questions: allQuestions,
-  answers: [],
+  // Initial state - try to load from sessionStorage
+  sessionId: typeof window !== 'undefined' ? sessionStorage.getItem('test_sessionId') : null,
+  userContext: typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('test_userContext') || 'null') : null,
+  currentQuestionIndex: typeof window !== 'undefined' ? parseInt(sessionStorage.getItem('test_currentIndex') || '0') : 0,
+  questions: typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('test_questions') || JSON.stringify(allQuestions)) : allQuestions,
+  answers: typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('test_answers') || '[]') : [],
   isLoading: false,
   isCompleted: false,
   teaserData: null,
@@ -54,16 +54,12 @@ export const useTestStore = create<TestState>((set, get) => ({
   initializeTest: async (userContext: UserContext) => {
     set({ isLoading: true });
     
-    console.log('🔍 DEBUG Frontend:');
-    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
+    console.log('🔍 Initializing test with Vercel API...');
     console.log('User context:', userContext);
     
     try {
-      const fullUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/startTest`;
-      console.log('Full URL:', fullUrl);
-      
-      // Call backend API to create test session
-      const response = await fetch(fullUrl, {
+      // Call Vercel API to create test session
+      const response = await fetch('/api/startTest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +68,6 @@ export const useTestStore = create<TestState>((set, get) => ({
       });
       
       console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -82,19 +77,34 @@ export const useTestStore = create<TestState>((set, get) => ({
       
       const data = await response.json();
       console.log('Response data:', data);
+      console.log('Questions received:', data.questions.length);
+      console.log('First question:', data.questions[0]);
       
-      set({
-        sessionId: data.data.sessionId,
+      const newState = {
+        sessionId: data.sessionId,
         userContext,
-        questions: data.data.questions || allQuestions,
+        questions: data.questions,
         currentQuestionIndex: 0,
         answers: [],
         isLoading: false,
-      });
+      };
       
-      console.log('✅ Test initialized successfully, redirecting to /test');
-      // Redirect to test page
-      window.location.href = '/test';
+      // Save to sessionStorage for persistence across page reloads
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('test_sessionId', data.sessionId);
+        sessionStorage.setItem('test_userContext', JSON.stringify(userContext));
+        sessionStorage.setItem('test_questions', JSON.stringify(data.questions));
+        sessionStorage.setItem('test_currentIndex', '0');
+        sessionStorage.setItem('test_answers', '[]');
+        
+        console.log('💾 Saved to sessionStorage');
+      }
+      
+      set(newState);
+      
+      console.log('✅ Test initialized successfully');
+      
+      return true;
       
     } catch (error) {
       console.error('Error initializing test:', error);
@@ -114,15 +124,16 @@ export const useTestStore = create<TestState>((set, get) => ({
     set({ isLoading: true });
     
     try {
-      // Call backend API to save answer
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/saveAnswer`, {
+      // Call Vercel API to save answer
+      const response = await fetch('/api/saveAnswer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           sessionId,
-          answer,
+          questionId: answer.questionId,
+          answer: answer.answer,
         }),
       });
       
@@ -137,6 +148,11 @@ export const useTestStore = create<TestState>((set, get) => ({
         isLoading: false,
       });
       
+      // Update sessionStorage
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('test_answers', JSON.stringify(updatedAnswers));
+      }
+      
     } catch (error) {
       console.error('Error saving answer:', error);
       set({ isLoading: false });
@@ -148,7 +164,11 @@ export const useTestStore = create<TestState>((set, get) => ({
   nextQuestion: () => {
     const { currentQuestionIndex, questions } = get();
     if (currentQuestionIndex < questions.length - 1) {
-      set({ currentQuestionIndex: currentQuestionIndex + 1 });
+      const newIndex = currentQuestionIndex + 1;
+      set({ currentQuestionIndex: newIndex });
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('test_currentIndex', newIndex.toString());
+      }
     }
   },
 
@@ -156,7 +176,11 @@ export const useTestStore = create<TestState>((set, get) => ({
   previousQuestion: () => {
     const { currentQuestionIndex } = get();
     if (currentQuestionIndex > 0) {
-      set({ currentQuestionIndex: currentQuestionIndex - 1 });
+      const newIndex = currentQuestionIndex - 1;
+      set({ currentQuestionIndex: newIndex });
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('test_currentIndex', newIndex.toString());
+      }
     }
   },
 
@@ -171,8 +195,8 @@ export const useTestStore = create<TestState>((set, get) => ({
     set({ isLoading: true });
     
     try {
-      // Call backend API to process results
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/processResults`, {
+      // Call Vercel API to process results
+      const response = await fetch('/api/processResults', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -188,11 +212,14 @@ export const useTestStore = create<TestState>((set, get) => ({
       
       set({
         isCompleted: true,
-        teaserData: data.teaser,
+        teaserData: {
+          archetype: data.analysis.traderType,
+          mainStrength: data.analysis.strengthsWeaknesses.strengths[0] || 'Analytical thinking'
+        },
         isLoading: false,
       });
       
-      // Redirect to results page
+      // Redirect to results page using router
       window.location.href = '/results';
       
     } catch (error) {
@@ -204,6 +231,15 @@ export const useTestStore = create<TestState>((set, get) => ({
 
   // Reset test to initial state
   resetTest: () => {
+    // Clear sessionStorage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('test_sessionId');
+      sessionStorage.removeItem('test_userContext');
+      sessionStorage.removeItem('test_questions');
+      sessionStorage.removeItem('test_currentIndex');
+      sessionStorage.removeItem('test_answers');
+    }
+    
     set({
       sessionId: null,
       userContext: null,

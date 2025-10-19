@@ -19,6 +19,12 @@ export interface TestQuestion {
     text: string;
     value: number;
   }>;
+  scaleMin?: number;
+  scaleMax?: number;
+  scaleLabels?: {
+    min: string;
+    max: string;
+  };
   gameConfig?: {
     type: 'risk-assessment' | 'decision-timing' | 'emotional-control';
     parameters: Record<string, any>;

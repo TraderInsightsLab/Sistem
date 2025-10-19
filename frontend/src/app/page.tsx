@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { OnboardingForm } from '@/components/OnboardingForm';
@@ -8,6 +9,7 @@ import { useTestStore } from '@/store/testStore';
 import { Brain, Target, Shield, TrendingUp, Users, Star } from 'lucide-react';
 
 export default function HomePage() {
+  const router = useRouter();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,10 +25,29 @@ export default function HomePage() {
     setError(null);
     
     try {
+      console.log('📝 Starting test initialization...');
       await initializeTest(userContext);
-      // Redirect will be handled by the test store if successful
+      
+      // Double-check sessionStorage before redirecting
+      const sessionId = sessionStorage.getItem('test_sessionId');
+      const questions = sessionStorage.getItem('test_questions');
+      
+      console.log('🔍 Verification before redirect:', {
+        sessionId: sessionId,
+        questionsCount: questions ? JSON.parse(questions).length : 0,
+        hasUserContext: !!sessionStorage.getItem('test_userContext'),
+      });
+      
+      if (!sessionId) {
+        throw new Error('Session not saved properly');
+      }
+      
+      console.log('🚀 Redirecting to test page...');
+      
+      // Use Next.js router for client-side navigation
+      router.push('/test');
     } catch (error) {
-      console.error('Failed to initialize test:', error);
+      console.error('❌ Failed to initialize test:', error);
       setError('Nu am putut iniția testul. Te rog încearcă din nou.');
       setIsLoading(false);
     }

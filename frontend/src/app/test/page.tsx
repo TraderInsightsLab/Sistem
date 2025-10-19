@@ -35,12 +35,23 @@ export default function TestPage() {
   useEffect(() => {
     // Only redirect after component is mounted and store is hydrated
     if (mounted && !sessionId) {
-      console.log('No session found, redirecting to home');
-      const timeoutId = setTimeout(() => {
-        window.location.href = '/';
-      }, 1000); // Give store time to hydrate
+      console.log('⚠️ No session found in store');
       
-      return () => clearTimeout(timeoutId);
+      // Check sessionStorage directly as a fallback
+      const storedSessionId = sessionStorage.getItem('test_sessionId');
+      console.log('Checking sessionStorage directly:', storedSessionId);
+      
+      if (!storedSessionId) {
+        console.log('❌ No session in storage either, redirecting to home');
+        const timeoutId = setTimeout(() => {
+          window.location.href = '/';
+        }, 2000); // Give more time for hydration
+        
+        return () => clearTimeout(timeoutId);
+      } else {
+        console.log('✅ Found session in storage, waiting for store to hydrate...');
+        // Store will hydrate from sessionStorage, wait a bit
+      }
     }
   }, [mounted, sessionId]);
 

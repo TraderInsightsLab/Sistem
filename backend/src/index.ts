@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 
 // Import all our function handlers
-import { startTestHandler } from './functions/startTest';
+import { startTestHandler } from './functions/startTest_new';
 import { saveAnswerHandler } from './functions/saveAnswer';
 import { processResultsHandler } from './functions/processResults';
 import { handlePaymentSuccessHandler } from './functions/handlePaymentSuccess';
