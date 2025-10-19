@@ -178,8 +178,8 @@ export default function TestPage() {
               {/* Game Questions - Show placeholder */}
               {question.type === 'cognitive-game' && (
                 <div className="bg-gray-50 p-6 rounded-lg text-center">
-                  <p className="text-gray-600 mb-2">{question.description}</p>
-                  <p className="text-sm text-gray-500">Timp limită: {question.timeLimit}s</p>
+                  <p className="text-gray-600 mb-2">Joc cognitiv interactiv</p>
+                  <p className="text-sm text-gray-500">Acest joc va fi disponibil în versiunea finală</p>
                   <button
                     type="button"
                     className={`mt-4 px-6 py-2 rounded-lg font-medium ${
