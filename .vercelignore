@@ -15,7 +15,7 @@ backend/
 .env*.local
 
 # Build directories
-lib/
+backend/lib/
 build/
 .next/
 out/
