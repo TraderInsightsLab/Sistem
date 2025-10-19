@@ -119,8 +119,8 @@ export default function TestPage() {
               {question.type === 'scale' && question.scaleMin && question.scaleMax && (
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>{question.scaleMinLabel || question.scaleMin}</span>
-                    <span>{question.scaleMaxLabel || question.scaleMax}</span>
+                    <span>{question.scaleLabels?.min || question.scaleMin}</span>
+                    <span>{question.scaleLabels?.max || question.scaleMax}</span>
                   </div>
                   <div className="grid grid-cols-7 gap-2">
                     {Array.from({ length: question.scaleMax - question.scaleMin + 1 }, (_, i) => {
