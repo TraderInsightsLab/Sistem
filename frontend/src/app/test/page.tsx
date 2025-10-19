@@ -10,6 +10,7 @@ import { TestAnswer } from '@/types';
 export default function TestPage() {
   const [mounted, setMounted] = useState(false);
   const [localAnswers, setLocalAnswers] = useState<Record<string, string | number>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     sessionId,
     questions,
@@ -40,6 +41,9 @@ export default function TestPage() {
   };
 
   const handleSubmitAll = async () => {
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
     try {
       // Save all answers
       for (const [questionId, answer] of Object.entries(localAnswers)) {
@@ -51,10 +55,14 @@ export default function TestPage() {
         await saveAnswer(testAnswer);
       }
       
-      // Complete test
+      // Complete test and redirect to results
       await completeTest();
+      window.location.href = '/results';
     } catch (error) {
       console.error('Error submitting answers:', error);
+      alert('A apărut o eroare la salvarea răspunsurilor. Te rog încearcă din nou.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -202,14 +210,14 @@ export default function TestPage() {
       <div className="mt-8 flex justify-center">
         <Button
           onClick={handleSubmitAll}
-          disabled={!allAnswered || isLoading}
+          disabled={!allAnswered || isSubmitting}
           className="bg-blue-600 hover:bg-blue-700 px-12 py-3 text-lg"
         >
-          {isLoading ? 'Se procesează...' : allAnswered ? 'Trimite Răspunsurile' : `Răspunde la toate întrebările (${Object.keys(localAnswers).length}/${questions.length})`}
+          {isSubmitting ? 'Se procesează...' : allAnswered ? 'Trimite Răspunsurile' : `Răspunde la toate întrebările (${Object.keys(localAnswers).length}/${questions.length})`}
         </Button>
       </div>
 
-      {isLoading && (
+      {isSubmitting && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
