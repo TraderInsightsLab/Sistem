@@ -11,8 +11,49 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'failed'>('pending');
   const [stripeSessionId, setStripeSessionId] = useState<string | null>(null);
+  const [isLoadingResults, setIsLoadingResults] = useState(true);
+  const [resultsError, setResultsError] = useState<string | null>(null);
   
   const { teaserData, sessionId, paymentStatus: storePaymentStatus } = useTestStore();
+
+  // Load results on mount if we have a sessionId
+  useEffect(() => {
+    const loadResults = async () => {
+      if (!sessionId) {
+        setResultsError('No test session found');
+        setIsLoadingResults(false);
+        return;
+      }
+
+      // If teaserData already exists, skip loading
+      if (teaserData) {
+        setIsLoadingResults(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/processResults', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load results');
+        }
+
+        const data = await response.json();
+        // Store will be updated by completeTest, but we can display immediately
+        setIsLoadingResults(false);
+      } catch (error) {
+        console.error('Error loading results:', error);
+        setResultsError('Failed to load results');
+        setIsLoadingResults(false);
+      }
+    };
+
+    loadResults();
+  }, [sessionId, teaserData]);
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
@@ -146,6 +187,36 @@ function ResultsContent() {
                 Înapoi Acasă
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoadingResults) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p>Se încarcă rezultatele...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error state
+  if (resultsError) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-red-600 mb-4">{resultsError}</p>
+            <Button onClick={() => window.location.href = '/'}>
+              Înapoi la Pagina Principală
+            </Button>
           </CardContent>
         </Card>
       </div>
