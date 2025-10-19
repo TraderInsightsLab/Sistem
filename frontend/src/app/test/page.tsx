@@ -103,10 +103,7 @@ export default function TestPage() {
         <CardContent className="p-8">
           <TestQuestion
             question={currentQuestion}
-            onAnswerSubmit={() => {
-              // Answer submission is handled within TestQuestion component
-              // This callback is for any additional UI updates
-            }}
+            onAnswerSubmit={handleNext}
           />
         </CardContent>
       </Card>
