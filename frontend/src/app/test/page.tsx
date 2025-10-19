@@ -145,7 +145,7 @@ export default function TestPage() {
               )}
 
               {/* Choice Questions */}
-              {question.type === 'choice' && question.options && (
+              {(question.type === 'single-choice' || question.type === 'multiple-choice') && question.options && (
                 <div className="space-y-3">
                   {question.options.map((option) => (
                     <button
@@ -176,7 +176,7 @@ export default function TestPage() {
               )}
 
               {/* Game Questions - Show placeholder */}
-              {question.type === 'game' && (
+              {question.type === 'cognitive-game' && (
                 <div className="bg-gray-50 p-6 rounded-lg text-center">
                   <p className="text-gray-600 mb-2">{question.description}</p>
                   <p className="text-sm text-gray-500">Timp limită: {question.timeLimit}s</p>
